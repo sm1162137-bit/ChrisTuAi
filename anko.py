@@ -9,8 +9,11 @@ import os
 
 
 # 1. 填入你的 API Key
-API_KEY = "AIzaSyATUEksFTqZra_eeoLM0ixcNXexRzzb0ic".strip()
-genai.configure(api_key=API_KEY)
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+API_KEY = os.getenv("GEMINI_API_KEY")
 
 
 # 💾 存記憶（把對話存到 memory.json）
