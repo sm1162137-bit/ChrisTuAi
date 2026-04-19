@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>安子</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background: #fff0f5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        h1 {
+            color: #ff6b9d;
+            margin-top: 30px;
+        }
+
+        #chatbox {
+            width: 500px;
+            height: 400px;
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            overflow-y: auto;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .message {
+            margin: 10px 0;
+            padding: 10px 14px;
+            border-radius: 12px;
+            max-width: 80%;
+        }
+
+        .user {
+            background: #ff6b9d;
+            color: white;
+            margin-left: auto;
+            text-align: right;
+        }
+
+        .anko {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        #inputarea {
+            display: flex;
+            width: 500px;
+            margin-top: 12px;
+            gap: 8px;
+        }
+
+        #userinput {
+            flex: 1;
+            padding: 10px;
+            border-radius: 12px;
+            border: 1px solid #ffb3cc;
+            font-size: 16px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: #ff6b9d;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>💕 安子</h1>
+    <div id="chatbox"></div>
+    <div id="inputarea">
+        <input id="userinput" type="text" placeholder="跟安子說話...">
+        <button onclick="sendMessage()">傳送</button>
+    </div>
+
+    <script>
+        async function sendMessage() {
+            const input = document.getElementById("userinput");
+            const chatbox = document.getElementById("chatbox");
+            const message = input.value.trim();
+            if (!message) return;
+
+            chatbox.innerHTML += `<div class="message user">你：${message}</div>`;
+            input.value = "";
+
+            const response = await fetch("/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: message })
+            });
+
+            const data = await response.json();
+
+            chatbox.innerHTML += `<div class="message anko">安子：${data.reply}</div>`;
+            chatbox.scrollTop = chatbox.scrollHeight;
+        }
+
+        document.getElementById("userinput").addEventListener("keypress", function(e) {
+            if (e.key === "Enter") sendMessage();
+        });
+    </script>
+</body>
+</html>
