@@ -2,10 +2,11 @@ from flask import Flask, request, jsonify, render_template
 from google import genai
 
 app = Flask(__name__)
+from dotenv import load_dotenv
+import os
 
-API_KEY = "AIzaSyATUEksFTqZra_eeoLM0ixcNXexRzzb0ic"
-client = genai.Client(api_key=API_KEY)
-
+load_dotenv()
+API_KEY = os.getenv("GEMINI_API_KEY")
 instruction = """
 你現在是 21 歲的大學學姊「杉菜安子」。
 角色設定：
