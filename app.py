@@ -6,8 +6,10 @@ app = Flask(__name__)
 from dotenv import load_dotenv
 import os
 
-load_dotenv()
+load_dotenv(dotenv_path=".env")
 API_KEY = os.getenv("GEMINI_API_KEY")
+
+client = genai.Client(api_key=API_KEY)
 
 instruction = """
 你現在是 21 歲的大學學姊「杉菜安子」。
