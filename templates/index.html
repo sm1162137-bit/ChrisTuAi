@@ -13,7 +13,26 @@
             height: 100vh;
             margin: 0;
         }
+#profile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
+}
 
+#avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 3px solid #ff6b9d;
+    background: white;
+}
+
+#status {
+    color: #4CAF50;
+    font-size: 13px;
+    margin: 4px 0 10px 0;
+}
         h1 {
             color: #ff6b9d;
             margin-top: 30px;
@@ -75,7 +94,11 @@
     </style>
 </head>
 <body>
+    <div id="profile">
+    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=anko&backgroundColor=ffdfeb" id="avatar">
     <h1>💕 安子</h1>
+    <p id="status">● 在線</p>
+</div>
     <div id="chatbox"></div>
     <div id="inputarea">
         <input id="userinput" type="text" placeholder="跟安子說話...">
