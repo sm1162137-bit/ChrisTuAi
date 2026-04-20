@@ -2,84 +2,134 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>安子</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             font-family: sans-serif;
-            background: #fff0f5;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            background: #0d0d0d;
+            overflow: hidden;
+        }
+
+        #app {
+            width: 390px;
+            height: 100vh;
             display: flex;
             flex-direction: column;
+            background: #1a1a2e;
+        }
+
+        /* 頂部導覽列 */
+        #topbar {
+            display: flex;
             align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-#profile {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-top: 20px;
-}
-
-#avatar {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    border: 3px solid #ff6b9d;
-    background: white;
-}
-
-#status {
-    color: #4CAF50;
-    font-size: 13px;
-    margin: 4px 0 10px 0;
-}
-        h1 {
-            color: #ff6b9d;
-            margin-top: 30px;
+            gap: 12px;
+            padding: 12px 16px;
+            border-bottom: 1px solid #333;
+            background: #1a1a2e;
         }
 
+        #topbar img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid #ff6b9d;
+            object-fit: cover;
+        }
+
+        #topbar-info h1 {
+            color: white;
+            font-size: 16px;
+        }
+
+        #topbar-info p {
+            color: #4CAF50;
+            font-size: 12px;
+        }
+
+        /* 對話區域 */
         #chatbox {
-            width: 500px;
-            height: 400px;
-            background: white;
-            border-radius: 16px;
-            padding: 20px;
+            flex: 1;
             overflow-y: auto;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
 
-        .message {
-            margin: 10px 0;
+        .message-row {
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+        }
+
+        .message-row.user {
+            justify-content: flex-end;
+        }
+
+        .message-row.anko {
+            justify-content: flex-start;
+        }
+
+        .row-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        .bubble {
+            max-width: 70%;
             padding: 10px 14px;
-            border-radius: 12px;
-            max-width: 80%;
+            border-radius: 18px;
+            font-size: 15px;
+            line-height: 1.5;
         }
 
-        .user {
+        .message-row.user .bubble {
             background: #ff6b9d;
             color: white;
-            margin-left: auto;
-            text-align: right;
+            border-bottom-right-radius: 4px;
         }
 
-        .anko {
-            background: #f0f0f0;
-            color: #333;
+        .message-row.anko .bubble {
+            background: #2a2a3e;
+            color: #eee;
+            border-bottom-left-radius: 4px;
         }
 
+        /* 輸入區域 */
         #inputarea {
             display: flex;
-            width: 500px;
-            margin-top: 12px;
+            padding: 12px 16px;
             gap: 8px;
+            background: #1a1a2e;
+            border-top: 1px solid #333;
         }
 
         #userinput {
             flex: 1;
-            padding: 10px;
-            border-radius: 12px;
-            border: 1px solid #ffb3cc;
-            font-size: 16px;
+            padding: 10px 16px;
+            border-radius: 24px;
+            border: 1px solid #444;
+            background: #2a2a3e;
+            color: white;
+            font-size: 15px;
+            outline: none;
+        }
+
+        #userinput::placeholder {
+            color: #888;
         }
 
         button {
@@ -87,22 +137,55 @@
             background: #ff6b9d;
             color: white;
             border: none;
-            border-radius: 12px;
-            font-size: 16px;
+            border-radius: 24px;
+            font-size: 15px;
             cursor: pointer;
         }
+
+        button:active {
+            opacity: 0.8;
+        }
+
+        #back-btn, #menu-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+}
+
+#back-btn:active, #menu-btn:active {
+    background: #333;
+}
+
+#topbar-info {
+    flex: 1;
+}
     </style>
 </head>
 <body>
-    <div id="profile">
-    <img src="/static/avatar.png" id="avatar">
-    <h1>💕 安子</h1>
-    <p id="status">● 在線</p>
+    <div id="app">
+        <!-- 頂部導覽列 -->
+        <div id="topbar">
+    <button id="back-btn">&#8592;</button>
+    <img src="/static/avatar.png" id="topbar-avatar">
+    <div id="topbar-info">
+        <h1>杉菜安子</h1>
+        <p>● 在線</p>
+    </div>
+    <button id="menu-btn">&#9776;</button>
 </div>
-    <div id="chatbox"></div>
-    <div id="inputarea">
-        <input id="userinput" type="text" placeholder="跟安子說話...">
-        <button onclick="sendMessage()">傳送</button>
+
+        <!-- 對話框 -->
+        <div id="chatbox"></div>
+
+        <!-- 輸入區 -->
+        <div id="inputarea">
+            <input id="userinput" type="text" placeholder="對安子說些什麼...">
+            <button onclick="sendMessage()">傳送</button>
+        </div>
     </div>
 
     <script>
@@ -112,8 +195,12 @@
             const message = input.value.trim();
             if (!message) return;
 
-            chatbox.innerHTML += `<div class="message user">你：${message}</div>`;
+            chatbox.innerHTML += `
+                <div class="message-row user">
+                    <div class="bubble">${message}</div>
+                </div>`;
             input.value = "";
+            chatbox.scrollTop = chatbox.scrollHeight;
 
             const response = await fetch("/chat", {
                 method: "POST",
@@ -122,8 +209,11 @@
             });
 
             const data = await response.json();
-
-            chatbox.innerHTML += `<div class="message anko">安子：${data.reply}</div>`;
+            chatbox.innerHTML += `
+                <div class="message-row anko">
+                    <img src="/static/avatar.png" class="row-avatar">
+                    <div class="bubble">${data.reply}</div>
+                </div>`;
             chatbox.scrollTop = chatbox.scrollHeight;
         }
 
