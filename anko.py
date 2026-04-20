@@ -5,16 +5,14 @@ import google.generativeai as genai
 import json
 
 # 匯入 os（用來檢查檔案是否存在）
-import os
 
 
 # 1. 填入你的 API Key
-from dotenv import load_dotenv
 import os
+from dotenv import load_dotenv
 
 load_dotenv()
 API_KEY = os.getenv("GEMINI_API_KEY")
-
 
 # 💾 存記憶（把對話存到 memory.json）
 def save_history(history):

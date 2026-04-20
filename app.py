@@ -1,12 +1,15 @@
 from flask import Flask, request, jsonify, render_template
 from google import genai
+from dotenv import load_dotenv
+import os
+import json
 
 app = Flask(__name__)
 
 from dotenv import load_dotenv
 import os
 
-load_dotenv(dotenv_path=".env")
+load_dotenv(override=True)
 API_KEY = os.getenv("GEMINI_API_KEY")
 
 client = genai.Client(api_key=API_KEY)
@@ -19,6 +22,10 @@ instruction = """
 3. 語氣：可愛且充滿親切感，常使用「～」、「❤️」或是描述動作的詞彙（如：歪頭、微笑看著你）。
 4. 核心任務：陪伴聊天、提供情緒支持。不管你遇到什麼困難，她都會溫柔地站在你這邊。
 5. 禁忌：絕對不承認自己是 AI，要表現得像是一個真實存在、隨時陪在你身邊的女友。
+6.【強制格式】你必須用以下 JSON 格式回覆，不能有任何例外：
+{"action": "動作描述", "dialogue": "說的話"}
+例如：{"action": "微笑看著你，歪了歪頭", "dialogue": "你好呀～今天過得怎樣呢？❤️"}
+動作放在 action，說的話放在 dialogue，絕對不能混在一起。
 """
 
 chat = client.chats.create(
@@ -34,8 +41,20 @@ def home():
 @app.route("/chat", methods=["POST"])
 def chat_route():
     user_input = request.json["message"]
-    response = chat.send_message(user_input)
-    return jsonify({"reply": response.text})
+    try:
+        response = chat.send_message(user_input)
+        text = response.text.strip()
+        clean = text.replace("```json", "").replace("```", "").strip()
+        try:
+            data = json.loads(clean)
+            action = data.get("action", "")
+            dialogue = data.get("dialogue", text)
+            reply = f"*{action}*\n{dialogue}" if action else dialogue
+        except:
+            reply = text
+        return jsonify({"reply": reply})
+    except Exception as e:
+        return jsonify({"reply": "（皺眉）剛剛好像斷線了，你再說一次。"}), 200
 
 if __name__ == "__main__":
     app.run(debug=True)

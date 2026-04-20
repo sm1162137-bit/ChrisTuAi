@@ -163,6 +163,12 @@
 #topbar-info {
     flex: 1;
 }
+
+.action {
+    color: #888;
+    font-style: italic;
+    font-size: 13px;
+}
     </style>
 </head>
 <body>
@@ -189,6 +195,11 @@
     </div>
 
     <script>
+
+function formatMessage(text) {
+    return text.replace(/\*([^*]+)\*/g, '<span class="action">$1</span>');
+}
+
         async function sendMessage() {
             const input = document.getElementById("userinput");
             const chatbox = document.getElementById("chatbox");
@@ -210,11 +221,10 @@
 
             const data = await response.json();
             chatbox.innerHTML += `
-                <div class="message-row anko">
-                    <img src="/static/avatar.png" class="row-avatar">
-                    <div class="bubble">${data.reply}</div>
-                </div>`;
-            chatbox.scrollTop = chatbox.scrollHeight;
+    <div class="message-row anko">
+        <img src="/static/avatar.png" class="row-avatar">
+        <div class="bubble">${formatMessage(data.reply)}</div>
+    </div>`;
         }
 
         document.getElementById("userinput").addEventListener("keypress", function(e) {
