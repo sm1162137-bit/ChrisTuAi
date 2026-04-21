@@ -1,18 +1,20 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify
 from google import genai
 from dotenv import load_dotenv
 import os
 import json
+import redis
 
 app = Flask(__name__)
 
-from dotenv import load_dotenv
-import os
-
 load_dotenv(override=True)
 API_KEY = os.getenv("GEMINI_API_KEY")
+REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
 
 client = genai.Client(api_key=API_KEY)
+
+# 連接 Redis
+r = redis.from_url(REDIS_URL)
 
 instruction = """
 你現在是 21 歲的大學學姊「杉菜安子」。
@@ -28,10 +30,14 @@ instruction = """
 動作放在 action，說的話放在 dialogue，絕對不能混在一起。
 """
 
-chat = client.chats.create(
-    model="gemini-2.5-flash",
-    config={"system_instruction": instruction}
-)
+def get_history():
+    data = r.get("chat_history")
+    if data:
+        return json.loads(data)
+    return []
+
+def save_history(history):
+    r.set("chat_history", json.dumps(history, ensure_ascii=False))
 
 @app.route("/")
 def home():
@@ -42,10 +48,21 @@ def home():
 def chat_route():
     user_input = request.json["message"]
     try:
+        history = get_history()
+        chat = client.chats.create(
+            model="gemini-2.5-flash",
+            config={"system_instruction": instruction},
+            history=history
+        )
         response = chat.send_message(user_input)
         text = response.text.strip()
-        clean = text.replace("```json", "").replace("```", "").strip()
+        
+        # 儲存最新對話（只保留最近20筆）
+        new_history = list(chat.history)
+        save_history(new_history[-20:] if len(new_history) > 20 else new_history)
+        
         try:
+            clean = text.replace("```json", "").replace("```", "").strip()
             data = json.loads(clean)
             action = data.get("action", "")
             dialogue = data.get("dialogue", text)
