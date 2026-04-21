@@ -72,9 +72,10 @@
             gap: 8px;
         }
 
-        .message-row.user {
-            justify-content: flex-end;
-        }
+       .message-row.user {
+    justify-content: flex-end;
+    align-items: flex-end;
+}
 
         .message-row.anko {
             justify-content: flex-start;
@@ -94,6 +95,7 @@
             border-radius: 18px;
             font-size: 15px;
             line-height: 1.5;
+            word-break: break-all;
         }
 
         .message-row.user .bubble {
@@ -133,15 +135,27 @@
         }
 
         button {
-            padding: 10px 20px;
-            background: #ff6b9d;
-            color: white;
-            border: none;
-            border-radius: 24px;
-            font-size: 15px;
-            cursor: pointer;
-        }
+    padding: 10px 20px;
+    background: #ff6b9d;
+    color: white;
+    border: none;
+    border-radius: 24px;
+    font-size: 15px;
+    cursor: pointer;
+    transition: transform 0.1s, opacity 0.1s;
+}
 
+button:active {
+    transform: scale(0.92);
+    opacity: 0.8;
+}
+
+button:disabled {
+    background: #888;
+    cursor: not-allowed;
+    transform: none;
+    opacity: 0.6;
+}
         button:active {
             opacity: 0.8;
         }
@@ -169,6 +183,32 @@
     font-style: italic;
     font-size: 13px;
 }
+
+.typing span {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: #aaa;
+    border-radius: 50%;
+    margin: 0 2px;
+    animation: bounce 1.2s infinite;
+}
+
+.typing span:nth-child(2) { animation-delay: 0.2s; }
+.typing span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes bounce {
+    0%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-8px); }
+}
+
+.timestamp {
+    font-size: 11px;
+    color: #666;
+    align-self: flex-end;
+    margin-bottom: 4px;
+}
+
     </style>
 </head>
 <body>
@@ -194,42 +234,96 @@
         </div>
     </div>
 
-    <script>
-
+<script>
 function formatMessage(text) {
     return text.replace(/\*([^*]+)\*/g, '<span class="action">$1</span>');
 }
 
-        async function sendMessage() {
-            const input = document.getElementById("userinput");
-            const chatbox = document.getElementById("chatbox");
-            const message = input.value.trim();
-            if (!message) return;
+async function sendMessage() {
+    const input = document.getElementById("userinput");
+    const chatbox = document.getElementById("chatbox");
+    const message = input.value.trim();
+    if (!message) return;
 
-            chatbox.innerHTML += `
-                <div class="message-row user">
-                    <div class="bubble">${message}</div>
-                </div>`;
-            input.value = "";
-            chatbox.scrollTop = chatbox.scrollHeight;
+    const btn = document.querySelector("button");
+btn.disabled = true;
+btn.textContent = "...";
+    const now = new Date();
+    const time = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
 
-            const response = await fetch("/chat", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message: message })
-            });
+    // 先顯示你的訊息
+    chatbox.innerHTML += `
+        <div class="message-row user">
+            <div class="timestamp">${time}</div>
+            <div class="bubble">${message}</div>
+        </div>`;
+    input.value = "";
+    chatbox.scrollTop = chatbox.scrollHeight;
 
-            const data = await response.json();
-            chatbox.innerHTML += `
-    <div class="message-row anko">
-        <img src="/static/avatar.png" class="row-avatar">
-        <div class="bubble">${formatMessage(data.reply)}</div>
-    </div>`;
-        }
+    // 再顯示打字動畫
+    const typingId = "typing-" + Date.now();
+    chatbox.innerHTML += `
+        <div class="message-row anko" id="${typingId}">
+            <img src="/static/avatar.png" class="row-avatar">
+            <div class="bubble typing">
+                <span></span><span></span><span></span>
+            </div>
+        </div>`;
+    chatbox.scrollTop = chatbox.scrollHeight;
 
-        document.getElementById("userinput").addEventListener("keypress", function(e) {
-            if (e.key === "Enter") sendMessage();
-        });
-    </script>
+    const response = await fetch("/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: message })
+    });
+
+    const data = await response.json();
+
+    // 移除打字動畫
+    const typingEl = document.getElementById(typingId);
+    if (typingEl) typingEl.remove();
+
+    // 顯示安子的回覆
+    chatbox.innerHTML += `
+        <div class="message-row anko">
+            <img src="/static/avatar.png" class="row-avatar">
+            <div class="bubble">${formatMessage(data.reply)}</div>
+            <div class="timestamp">${time}</div>
+        </div>`;
+    chatbox.scrollTop = chatbox.scrollHeight;
+
+    btn.disabled = false;
+btn.textContent = "傳送";
+}
+
+
+
+// 頁面載入時顯示開場白
+window.onload = function() {
+    const chatbox = document.getElementById("chatbox");
+    const now = new Date();
+    const time = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+    
+    const greetings = [
+        "*輕輕敲門* 又見面了，你沒有忘記我吧？❤️",
+        "*歪頭微笑* 你來啦～ 今天過得怎麼樣呢？",
+        "*開心地揮手* 哎呀，終於等到你了！❤️",
+        "*靠過來* 你知道嗎，我一直在等你喔～",
+        "*微笑看著你* 來了呀～ 有什麼想跟我說的嗎？❤️"
+    ];
+    
+    const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)];
+    
+    chatbox.innerHTML += `
+        <div class="message-row anko">
+            <img src="/static/avatar.png" class="row-avatar">
+            <div class="bubble">${formatMessage(randomGreeting)}</div>
+            <div class="timestamp">${time}</div>
+        </div>`;
+}
+document.getElementById("userinput").addEventListener("keypress", function(e) {
+    if (e.key === "Enter") sendMessage();
+});
+</script>
 </body>
 </html>
