@@ -5,11 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>安子</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: sans-serif;
@@ -28,7 +24,6 @@
             background: #1a1a2e;
         }
 
-        /* 頂部導覽列 */
         #topbar {
             display: flex;
             align-items: center;
@@ -46,17 +41,24 @@
             object-fit: cover;
         }
 
-        #topbar-info h1 {
+        #topbar-info { flex: 1; }
+        #topbar-info h1 { color: white; font-size: 16px; }
+        #topbar-info p { color: #4CAF50; font-size: 12px; }
+
+        #back-btn, #menu-btn {
+            background: none;
+            border: none;
             color: white;
-            font-size: 16px;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
         }
 
-        #topbar-info p {
-            color: #4CAF50;
-            font-size: 12px;
-        }
+        #back-btn:active, #menu-btn:active { background: #333; }
 
-        /* 對話區域 */
         #chatbox {
             flex: 1;
             overflow-y: auto;
@@ -72,14 +74,12 @@
             gap: 8px;
         }
 
-       .message-row.user {
-    justify-content: flex-end;
-    align-items: flex-end;
-}
-
-        .message-row.anko {
-            justify-content: flex-start;
+        .message-row.user {
+            justify-content: flex-end;
+            align-items: flex-end;
         }
+
+        .message-row.anko { justify-content: flex-start; }
 
         .row-avatar {
             width: 28px;
@@ -95,7 +95,7 @@
             border-radius: 18px;
             font-size: 15px;
             line-height: 1.5;
-            word-break: break-all;
+            word-break: break-word;
         }
 
         .message-row.user .bubble {
@@ -110,7 +110,6 @@
             border-bottom-left-radius: 4px;
         }
 
-        /* 輸入區域 */
         #inputarea {
             display: flex;
             padding: 12px 16px;
@@ -130,200 +129,165 @@
             outline: none;
         }
 
-        #userinput::placeholder {
+        #userinput::placeholder { color: #888; }
+
+        #send-btn {
+            padding: 10px 20px;
+            background: #ff6b9d;
+            color: white;
+            border: none;
+            border-radius: 24px;
+            font-size: 15px;
+            cursor: pointer;
+            transition: transform 0.1s, opacity 0.1s;
+        }
+
+        #send-btn:active { transform: scale(0.92); opacity: 0.8; }
+
+        #send-btn:disabled {
+            background: #888;
+            cursor: not-allowed;
+            transform: none;
+            opacity: 0.6;
+        }
+
+        .action {
             color: #888;
+            font-style: italic;
+            font-size: 13px;
         }
 
-        button {
-    padding: 10px 20px;
-    background: #ff6b9d;
-    color: white;
-    border: none;
-    border-radius: 24px;
-    font-size: 15px;
-    cursor: pointer;
-    transition: transform 0.1s, opacity 0.1s;
-}
-
-button:active {
-    transform: scale(0.92);
-    opacity: 0.8;
-}
-
-button:disabled {
-    background: #888;
-    cursor: not-allowed;
-    transform: none;
-    opacity: 0.6;
-}
-        button:active {
-            opacity: 0.8;
+        .typing span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #aaa;
+            border-radius: 50%;
+            margin: 0 2px;
+            animation: bounce 1.2s infinite;
         }
 
-        #back-btn, #menu-btn {
-    background: none;
-    border: none;
-    color: white;
-    font-size: 20px;
-    cursor: pointer;
-    padding: 8px;
-    border-radius: 50%;
-}
+        .typing span:nth-child(2) { animation-delay: 0.2s; }
+        .typing span:nth-child(3) { animation-delay: 0.4s; }
 
-#back-btn:active, #menu-btn:active {
-    background: #333;
-}
+        @keyframes bounce {
+            0%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-8px); }
+        }
 
-#topbar-info {
-    flex: 1;
-}
-
-.action {
-    color: #888;
-    font-style: italic;
-    font-size: 13px;
-}
-
-.typing span {
-    display: inline-block;
-    width: 8px;
-    height: 8px;
-    background: #aaa;
-    border-radius: 50%;
-    margin: 0 2px;
-    animation: bounce 1.2s infinite;
-}
-
-.typing span:nth-child(2) { animation-delay: 0.2s; }
-.typing span:nth-child(3) { animation-delay: 0.4s; }
-
-@keyframes bounce {
-    0%, 80%, 100% { transform: translateY(0); }
-    40% { transform: translateY(-8px); }
-}
-
-.timestamp {
-    font-size: 11px;
-    color: #666;
-    align-self: flex-end;
-    margin-bottom: 4px;
-}
-
+        .timestamp {
+            font-size: 11px;
+            color: #666;
+            align-self: flex-end;
+            margin-bottom: 4px;
+        }
     </style>
 </head>
 <body>
     <div id="app">
-        <!-- 頂部導覽列 -->
         <div id="topbar">
-    <button id="back-btn">&#8592;</button>
-    <img src="/static/avatar.png" id="topbar-avatar">
-    <div id="topbar-info">
-        <h1>杉菜安子</h1>
-        <p>● 在線</p>
-    </div>
-    <button id="menu-btn">&#9776;</button>
-</div>
+            <button id="back-btn">&#8592;</button>
+            <img src="/static/avatar.png" id="topbar-avatar">
+            <div id="topbar-info">
+                <h1>杉菜安子</h1>
+                <p>● 在線</p>
+            </div>
+            <button id="menu-btn">&#9776;</button>
+        </div>
 
-        <!-- 對話框 -->
         <div id="chatbox"></div>
 
-        <!-- 輸入區 -->
         <div id="inputarea">
             <input id="userinput" type="text" placeholder="對安子說些什麼...">
-            <button onclick="sendMessage()">傳送</button>
+            <button id="send-btn" onclick="sendMessage()">傳送</button>
         </div>
     </div>
 
-<script>
-function formatMessage(text) {
-    return text.replace(/\*([^*]+)\*/g, '<span class="action">$1</span>');
-}
+    <script>
+        function formatMessage(text) {
+            return text.replace(/\*([^*]+)\*/g, '<span class="action">$1</span>');
+        }
 
-async function sendMessage() {
-    const input = document.getElementById("userinput");
-    const chatbox = document.getElementById("chatbox");
-    const message = input.value.trim();
-    if (!message) return;
+        async function sendMessage() {
+            const input = document.getElementById("userinput");
+            const chatbox = document.getElementById("chatbox");
+            const btn = document.getElementById("send-btn");
+            const message = input.value.trim();
+            if (!message) return;
 
-    const btn = document.querySelector("button");
-btn.disabled = true;
-btn.textContent = "...";
-    const now = new Date();
-    const time = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+            btn.disabled = true;
+            btn.textContent = "...";
 
-    // 先顯示你的訊息
-    chatbox.innerHTML += `
-        <div class="message-row user">
-            <div class="timestamp">${time}</div>
-            <div class="bubble">${message}</div>
-        </div>`;
-    input.value = "";
-    chatbox.scrollTop = chatbox.scrollHeight;
+            const now = new Date();
+            const time = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
 
-    // 再顯示打字動畫
-    const typingId = "typing-" + Date.now();
-    chatbox.innerHTML += `
-        <div class="message-row anko" id="${typingId}">
-            <img src="/static/avatar.png" class="row-avatar">
-            <div class="bubble typing">
-                <span></span><span></span><span></span>
-            </div>
-        </div>`;
-    chatbox.scrollTop = chatbox.scrollHeight;
+            chatbox.innerHTML += `
+                <div class="message-row user">
+                    <div class="timestamp">${time}</div>
+                    <div class="bubble">${message}</div>
+                </div>`;
+            input.value = "";
+            chatbox.scrollTop = chatbox.scrollHeight;
 
-    const response = await fetch("/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: message })
-    });
+            const typingId = "typing-" + Date.now();
+            chatbox.innerHTML += `
+                <div class="message-row anko" id="${typingId}">
+                    <img src="/static/avatar.png" class="row-avatar">
+                    <div class="bubble typing">
+                        <span></span><span></span><span></span>
+                    </div>
+                </div>`;
+            chatbox.scrollTop = chatbox.scrollHeight;
 
-    const data = await response.json();
+            const response = await fetch("/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: message })
+            });
 
-    // 移除打字動畫
-    const typingEl = document.getElementById(typingId);
-    if (typingEl) typingEl.remove();
+            const data = await response.json();
 
-    // 顯示安子的回覆
-    chatbox.innerHTML += `
-        <div class="message-row anko">
-            <img src="/static/avatar.png" class="row-avatar">
-            <div class="bubble">${formatMessage(data.reply)}</div>
-            <div class="timestamp">${time}</div>
-        </div>`;
-    chatbox.scrollTop = chatbox.scrollHeight;
+            const typingEl = document.getElementById(typingId);
+            if (typingEl) typingEl.remove();
 
-    btn.disabled = false;
-btn.textContent = "傳送";
-}
+            chatbox.innerHTML += `
+                <div class="message-row anko">
+                    <img src="/static/avatar.png" class="row-avatar">
+                    <div class="bubble">${formatMessage(data.reply)}</div>
+                    <div class="timestamp">${time}</div>
+                </div>`;
+            chatbox.scrollTop = chatbox.scrollHeight;
 
+            btn.disabled = false;
+            btn.textContent = "傳送";
+        }
 
+        window.onload = function() {
+            const chatbox = document.getElementById("chatbox");
+            const now = new Date();
+            const time = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
 
-// 頁面載入時顯示開場白
-window.onload = function() {
-    const chatbox = document.getElementById("chatbox");
-    const now = new Date();
-    const time = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
-    
-    const greetings = [
-        "*輕輕敲門* 又見面了，你沒有忘記我吧？❤️",
-        "*歪頭微笑* 你來啦～ 今天過得怎麼樣呢？",
-        "*開心地揮手* 哎呀，終於等到你了！❤️",
-        "*靠過來* 你知道嗎，我一直在等你喔～",
-        "*微笑看著你* 來了呀～ 有什麼想跟我說的嗎？❤️"
-    ];
-    
-    const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)];
-    
-    chatbox.innerHTML += `
-        <div class="message-row anko">
-            <img src="/static/avatar.png" class="row-avatar">
-            <div class="bubble">${formatMessage(randomGreeting)}</div>
-            <div class="timestamp">${time}</div>
-        </div>`;
-}
-document.getElementById("userinput").addEventListener("keypress", function(e) {
-    if (e.key === "Enter") sendMessage();
-});
-</script>
+            const greetings = [
+                "*輕輕敲門* 又見面了，你沒有忘記我吧？❤️",
+                "*歪頭微笑* 你來啦～ 今天過得怎麼樣呢？",
+                "*開心地揮手* 哎呀，終於等到你了！❤️",
+                "*靠過來* 你知道嗎，我一直在等你喔～",
+                "*微笑看著你* 來了呀～ 有什麼想跟我說的嗎？❤️"
+            ];
+
+            const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)];
+
+            chatbox.innerHTML += `
+                <div class="message-row anko">
+                    <img src="/static/avatar.png" class="row-avatar">
+                    <div class="bubble">${formatMessage(randomGreeting)}</div>
+                    <div class="timestamp">${time}</div>
+                </div>`;
+        }
+
+        document.getElementById("userinput").addEventListener("keypress", function(e) {
+            if (e.key === "Enter") sendMessage();
+        });
+    </script>
 </body>
 </html>
