@@ -31,13 +31,27 @@ instruction = """
 """
 
 def get_history():
-    data = r.get("chat_history")
-    if data:
-        return json.loads(data)
+    try:
+        data = r.get("chat_history")
+        if data:
+            return json.loads(data)
+    except:
+        pass
     return []
 
 def save_history(history):
-    r.set("chat_history", json.dumps(history, ensure_ascii=False))
+    try:
+        serializable = []
+        for item in history:
+            serializable.append({
+                "role": item.role,
+                "parts": [{"text": p.text} for p in item.parts]
+            })
+        r.set("chat_history", json.dumps(serializable, ensure_ascii=False))
+    except Exception as e:
+        print("save error:", e)
+
+
 
 @app.route("/")
 def home():
@@ -58,8 +72,9 @@ def chat_route():
         text = response.text.strip()
         
         # 儲存最新對話（只保留最近20筆）
-        new_history = list(chat.history)
+        new_history = list(chat._curated_history)
         save_history(new_history[-20:] if len(new_history) > 20 else new_history)
+    
         
         try:
             clean = text.replace("```json", "").replace("```", "").strip()
@@ -71,6 +86,7 @@ def chat_route():
             reply = text
         return jsonify({"reply": reply})
     except Exception as e:
+        print("錯誤:", e)
         return jsonify({"reply": "（皺眉）剛剛好像斷線了，你再說一次。"}), 200
 
 if __name__ == "__main__":
