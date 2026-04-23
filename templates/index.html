@@ -358,122 +358,124 @@
                 }
 
                 setTimeout(() => {
-                    playAnimation('Breathing Idle');
-                    isAnimating = false;
-                }, 4000);
-            });
-            function animate() {
-                requestAnimationFrame(animate);
-                if (mixer) mixer.update(clock.getDelta());
-                renderer.render(scene, camera);
-            }
-            animate();
-            // ===== 聊天功能 =====
-            function formatMessage(text) {
-                return text.replace(/\*([^*]+)\*/g, '<span class="action">$1</span>');
-            }
+                    playAnimation('Waving');
+                    setTimeout(() => {
+                        playAnimation('Breathing Idle');
+                    }, 2000);
+                }, 3000); // 從1000改成3000，等模型載入
+            })
+                function animate() {
+                    requestAnimationFrame(animate);
+                    if (mixer) mixer.update(clock.getDelta());
+                    renderer.render(scene, camera);
+                }
+                animate();
+                // ===== 聊天功能 =====
+                function formatMessage(text) {
+                    return text.replace(/\*([^*]+)\*/g, '<span class="action">$1</span>');
+                }
 
-            async function sendMessage() {
-                const input = document.getElementById("userinput");
-                const chatbox = document.getElementById("chatbox");
-                const btn = document.getElementById("send-btn");
-                const message = input.value.trim();
-                if (!message) return;
+                async function sendMessage() {
+                    const input = document.getElementById("userinput");
+                    const chatbox = document.getElementById("chatbox");
+                    const btn = document.getElementById("send-btn");
+                    const message = input.value.trim();
+                    if (!message) return;
 
-                btn.disabled = true;
-                btn.textContent = "...";
+                    btn.disabled = true;
+                    btn.textContent = "...";
 
-                const now = new Date();
-                const time = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+                    const now = new Date();
+                    const time = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
 
-                chatbox.innerHTML += `
+                    chatbox.innerHTML += `
                 <div class="message-row user">
                     <div class="timestamp">${time}</div>
                     <div class="bubble">${message}</div>
                 </div>`;
-                input.value = "";
-                chatbox.scrollTop = chatbox.scrollHeight;
+                    input.value = "";
+                    chatbox.scrollTop = chatbox.scrollHeight;
 
-                const typingId = "typing-" + Date.now();
-                chatbox.innerHTML += `
+                    const typingId = "typing-" + Date.now();
+                    chatbox.innerHTML += `
                 <div class="message-row anko" id="${typingId}">
                     <img src="/static/anko1.png" class="row-avatar">
                     <div class="bubble typing">
                         <span></span><span></span><span></span>
                     </div>
                 </div>`;
-                chatbox.scrollTop = chatbox.scrollHeight;
+                    chatbox.scrollTop = chatbox.scrollHeight;
 
-                const response = await fetch("/chat", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ message: message })
-                });
+                    const response = await fetch("/chat", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ message: message })
+                    });
 
-                const data = await response.json();
-                console.log('data:', data);
-                // 根據動作切換動畫
-                // 從 reply 提取動作描述
-                const actionText = data.action || '';
-                console.log('動作:', actionText);
+                    const data = await response.json();
+                    console.log('data:', data);
+                    // 根據動作切換動畫
+                    // 從 reply 提取動作描述
+                    const actionText = data.action || '';
+                    console.log('動作:', actionText);
 
-                if (actionText.includes('開心') || actionText.includes('笑') || actionText.includes('高興')) {
-                    playAnimation('Happy Idle');
-                } else if (actionText.includes('難過') || actionText.includes('哭') || actionText.includes('傷心') || actionText.includes('嘆')) {
-                    playAnimation('Sad Idle');
-                } else if (actionText.includes('害羞') || actionText.includes('臉紅')) {
-                    playAnimation('Bashful');
-                } else if (actionText.includes('思考') || actionText.includes('想')) {
-                    playAnimation('Thinking');
-                } else if (actionText.includes('揮手') || actionText.includes('打招呼')) {
-                    playAnimation('Waving');
-                } else if (actionText.includes('點頭') || actionText.includes('說話')) {
-                    playAnimation('Head Nod Yes');
-                } else {
-                    playAnimation('Breathing Idle');
-                }
+                    if (actionText.includes('開心') || actionText.includes('笑') || actionText.includes('高興')) {
+                        playAnimation('Happy Idle');
+                    } else if (actionText.includes('難過') || actionText.includes('哭') || actionText.includes('傷心') || actionText.includes('嘆')) {
+                        playAnimation('Sad Idle');
+                    } else if (actionText.includes('害羞') || actionText.includes('臉紅')) {
+                        playAnimation('Bashful');
+                    } else if (actionText.includes('思考') || actionText.includes('想')) {
+                        playAnimation('Thinking');
+                    } else if (actionText.includes('揮手') || actionText.includes('打招呼')) {
+                        playAnimation('Waving');
+                    } else if (actionText.includes('點頭') || actionText.includes('說話')) {
+                        playAnimation('Head Nod Yes');
+                    } else {
+                        playAnimation('Breathing Idle');
+                    }
 
-                const typingEl = document.getElementById(typingId);
-                if (typingEl) typingEl.remove();
+                    const typingEl = document.getElementById(typingId);
+                    if (typingEl) typingEl.remove();
 
-                chatbox.innerHTML += `
+                    chatbox.innerHTML += `
                 <div class="message-row anko">
                     <img src="/static/anko1.png" class="row-avatar">
                     <div class="bubble">${formatMessage(data.reply)}</div>
                     <div class="timestamp">${time}</div>
                 </div>`;
-                chatbox.scrollTop = chatbox.scrollHeight;
+                    chatbox.scrollTop = chatbox.scrollHeight;
 
-                btn.disabled = false;
-                btn.textContent = "傳送";
-            }
+                    btn.disabled = false;
+                    btn.textContent = "傳送";
+                }
 
-            window.onload = function () {
-                const chatbox = document.getElementById("chatbox");
-                const now = new Date();
-                const time = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+                window.onload = function () {
+                    const chatbox = document.getElementById("chatbox");
+                    const now = new Date();
+                    const time = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
 
-                const randomGreeting = "*揮手微笑* 你來啦～ 有什麼想跟我說的嗎？❤️";
+                    const randomGreeting = "*揮手微笑* 你來啦～ 有什麼想跟我說的嗎？❤️";
 
-                chatbox.innerHTML += `
+                    chatbox.innerHTML += `
                 <div class="message-row anko">
                     <img src="/static/anko1.png" class="row-avatar">
                     <div class="bubble">${formatMessage(randomGreeting)}</div>
                     <div class="timestamp">${time}</div>
                 </div>`;
 
-                setTimeout(() => {
-                    playAnimation('Waving');
                     setTimeout(() => {
-                        playAnimation('Breathing Idle');
-                    }, 2000);
-                }, 1000); // 等模型載入後再播
-            }
+                        playAnimation('Waving');
+                        setTimeout(() => {
+                            playAnimation('Breathing Idle');
+                        }, 2000);
+                    }, 1000); // 等模型載入後再播
+                }
 
 
-            document.getElementById("userinput").addEventListener("keypress", function (e) {
-                if (e.key === "Enter") sendMessage();
-            });
+                document.getElementById("userinput").addEventListener("keypress", function (e) {
+                    if (e.key === "Enter") sendMessage();
+                });
         </script>
 </body>
 
