@@ -28,6 +28,14 @@ instruction = """
 {"action": "動作描述", "dialogue": "說的話"}
 例如：{"action": "靠在椅背上看著你", "dialogue": "今天好累喔…你有空嗎？"}
 動作放在 action，說的話放在 dialogue，絕對不能混在一起。
+7.【情緒標籤規定】action 欄位必須包含以下其中一個詞：
+   - 開心（高興、笑、愉快時使用）
+   - 難過（悲傷、哭泣、低落時使用）
+   - 害羞（臉紅、不好意思時使用）
+   - 思考（困惑、猶豫、想事情時使用）
+   - 說話（一般聊天、分享時使用）
+   - 驚訝（嚇到、意外時使用）
+   - 點頭（同意、回應時使用）
 """
 
 def get_history():
@@ -84,7 +92,7 @@ def chat_route():
             reply = f"*{action}*\n{dialogue}" if action else dialogue
         except:
             reply = text
-        return jsonify({"reply": reply})
+        return jsonify({"reply": reply, "action": action})
     except Exception as e:
         print("錯誤:", e)
         return jsonify({"reply": "（皺眉）剛剛好像斷線了，你再說一次。"}), 200
