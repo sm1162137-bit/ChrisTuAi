@@ -136,4 +136,5 @@ def chat_route():
         return jsonify({"reply": "（皺眉）剛剛好像斷線了，你再說一次。"}), 200
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
