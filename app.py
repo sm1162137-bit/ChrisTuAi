@@ -1,20 +1,31 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, redirect, url_for, session
 from google import genai
 from dotenv import load_dotenv
+from authlib.integrations.flask_client import OAuth
 import os
 import json
 import redis
 
 app = Flask(__name__)
+app.secret_key = os.urandom(24)
 
 load_dotenv(override=True)
 API_KEY = os.getenv("GEMINI_API_KEY")
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
 
 client = genai.Client(api_key=API_KEY)
-
-# 連接 Redis
 r = redis.from_url(REDIS_URL)
+
+oauth = OAuth(app)
+google = oauth.register(
+    name='google',
+    client_id=GOOGLE_CLIENT_ID,
+    client_secret=GOOGLE_CLIENT_SECRET,
+    server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
+    client_kwargs={'scope': 'openid email profile'}
+)
 
 instruction = """
 你現在是 18 歲的同學「杉菜安子」。
@@ -38,16 +49,16 @@ instruction = """
    - 點頭（同意、回應時使用）
 """
 
-def get_history():
+def get_history(user_id):
     try:
-        data = r.get("chat_history")
+        data = r.get(f"chat_history:{user_id}")
         if data:
             return json.loads(data)
     except:
         pass
     return []
 
-def save_history(history):
+def save_history(user_id, history):
     try:
         serializable = []
         for item in history:
@@ -55,22 +66,42 @@ def save_history(history):
                 "role": item.role,
                 "parts": [{"text": p.text} for p in item.parts]
             })
-        r.set("chat_history", json.dumps(serializable, ensure_ascii=False))
+        r.set(f"chat_history:{user_id}", json.dumps(serializable, ensure_ascii=False))
     except Exception as e:
         print("save error:", e)
 
-
-
 @app.route("/")
 def home():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
     with open("templates/index.html", "r", encoding="utf-8") as f:
         return f.read()
 
+@app.route("/login")
+def login():
+    return google.authorize_redirect(url_for("callback", _external=True))
+
+@app.route("/callback")
+def callback():
+    token = google.authorize_access_token()
+    user_info = token.get("userinfo")
+    session["user_id"] = user_info["sub"]
+    session["user_email"] = user_info["email"]
+    return redirect(url_for("home"))
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("login"))
+
 @app.route("/chat", methods=["POST"])
 def chat_route():
+    if "user_id" not in session:
+        return jsonify({"error": "未登入"}), 401
+    user_id = session["user_id"]
     user_input = request.json["message"]
     try:
-        history = get_history()
+        history = get_history(user_id)
         chat = client.chats.create(
             model="gemini-2.5-flash",
             config={"system_instruction": instruction},
@@ -78,12 +109,10 @@ def chat_route():
         )
         response = chat.send_message(user_input)
         text = response.text.strip()
-        
-        # 儲存最新對話（只保留最近20筆）
+
         new_history = list(chat._curated_history)
-        save_history(new_history[-20:] if len(new_history) > 20 else new_history)
-    
-        
+        save_history(user_id, new_history[-20:] if len(new_history) > 20 else new_history)
+
         try:
             clean = text.replace("```json", "").replace("```", "").strip()
             data = json.loads(clean)
