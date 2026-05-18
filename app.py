@@ -7,7 +7,7 @@ import json
 import redis
 
 app = Flask(__name__)
-app.secret_key = os.urandom(24)
+app.secret_key = os.getenv("SECRET_KEY", "dev-secret-key-change-this")
 
 load_dotenv(override=True)
 API_KEY = os.getenv("GEMINI_API_KEY")
@@ -79,7 +79,9 @@ def home():
 
 @app.route("/login")
 def login():
-    return google.authorize_redirect(url_for("callback", _external=True))
+    redirect_uri = "http://localhost:5000/callback"
+    print("redirect_uri:", redirect_uri)
+    return google.authorize_redirect(redirect_uri)
 
 @app.route("/callback")
 def callback():

@@ -318,7 +318,7 @@
             // 修改 loader.load 裡面，把 const model 改成直接賦值
 
             const loader = new THREE.GLTFLoader();
-            loader.load('/static/anko_all.glb', function (gltf) {
+            loader.load('/static/anko_compressed.glb', function (gltf) {
                 model = gltf.scene;
                 scene.add(model);
                 model.rotation.x = 0;
