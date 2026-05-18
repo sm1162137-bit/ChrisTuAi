@@ -8,16 +8,19 @@ import redis
 from flask_session import Session
 
 app = Flask(__name__)
-app.secret_key = os.getenv("SECRET_KEY", "dev-secret-key-change-this")
-app.config['SESSION_TYPE'] = 'redis'
-app.config['SESSION_REDIS'] = redis.from_url(REDIS_URL)
-Session(app)
 
 load_dotenv(override=True)
 API_KEY = os.getenv("GEMINI_API_KEY")
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
+
+app.secret_key = os.getenv("SECRET_KEY", "dev-secret-key-change-this")
+app.config['SESSION_TYPE'] = 'redis'
+app.config['SESSION_REDIS'] = redis.from_url(REDIS_URL)
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.config['SESSION_COOKIE_SECURE'] = False
+Session(app)
 
 client = genai.Client(api_key=API_KEY)
 r = redis.from_url(REDIS_URL)
