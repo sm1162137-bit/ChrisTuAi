@@ -86,7 +86,8 @@ def home():
 
 @app.route("/login")
 def login():
-    redirect_uri = url_for("callback", _external=True)
+    base = os.getenv("BASE_URL", "http://localhost:5000")
+    redirect_uri = base + "/callback"
     return google.authorize_redirect(redirect_uri)
 
 @app.route("/callback")
