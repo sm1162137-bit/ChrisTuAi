@@ -5,9 +5,13 @@ from authlib.integrations.flask_client import OAuth
 import os
 import json
 import redis
+from flask_session import Session
 
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "dev-secret-key-change-this")
+app.config['SESSION_TYPE'] = 'redis'
+app.config['SESSION_REDIS'] = redis.from_url(REDIS_URL)
+Session(app)
 
 load_dotenv(override=True)
 API_KEY = os.getenv("GEMINI_API_KEY")
