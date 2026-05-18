@@ -321,18 +321,22 @@
             loader.load('/static/anko_all.glb', function (gltf) {
                 model = gltf.scene;
                 scene.add(model);
-                model.rotation.x = -0.16;
+                model.rotation.x = 0;
                 model.position.y = -1.15;
-
+                model.traverse(function (child) {
+                    if (child.isSkinnedMesh) {
+                        child.frustumCulled = false;
+                    }
+                });
                 let firstMesh = true;
                 model.traverse(function (child) {
-                    if (child.isMesh) {
-                        if (firstMesh) firstMesh = false;
-                        else child.visible = false;
+                    if (child.isMesh && !child.isSkinnedMesh) {
+                        child.visible = false;
                     }
                 });
 
-                camera.position.set(-0.3, 1.2, 2.85);
+
+                camera.position.set(0, 1.2, 2.85);
                 camera.lookAt(0, 0.3, 0);
 
                 gltfAnimations = gltf.animations;
@@ -346,7 +350,7 @@
             let isAnimating = false;
 
             document.getElementById('model-container').addEventListener('click', function () {
-                if (isAnimating) return;
+                if (isAnimating || !mixer) return;
                 isAnimating = true;
 
                 mixer.stopAllAction();
@@ -360,22 +364,18 @@
                 }
 
                 setTimeout(() => {
-                    playAnimation('Waving');
-                    setTimeout(() => {
-                        playAnimation('Breathing Idle');
-                    }, 2000);
-                }, 3000); // 從1000改成3000，等模型載入
+                    playAnimation('Breathing Idle');
+                    isAnimating = false;
+                }, 3000);
             })
+
+            const controls = new THREE.OrbitControls(camera, renderer.domElement);
             function animate() {
                 requestAnimationFrame(animate);
-                if (mixer) mixer.update(clock.getDelta());
+                controls.update();
+                const delta = clock.getDelta();
+                if (mixer) mixer.update(delta);
                 renderer.render(scene, camera);
-                function animate() {
-                    requestAnimationFrame(animate);
-                    controls.update();
-                    if (mixer) mixer.update(clock.getDelta());
-                    renderer.render(scene, camera);
-                }
             }
             animate();
             // ===== 聊天功能 =====
@@ -499,14 +499,14 @@
                 }, 1000); // 等模型載入後再播
             }
 
-            const controls = new THREE.OrbitControls(camera, renderer.domElement);
+
             controls.enableDamping = true;
             controls.dampingFactor = 0.05;
             controls.enableZoom = false;
             controls.enablePan = false;
             controls.minPolarAngle = 1.3; // 最高只能看到這個角度
             controls.maxPolarAngle = 0.5; // 最低只能水平看
-            controls.target.set(0, 0.6, 0); // 旋轉中心固定在原點
+            controls.target.set(0, 0.175, 0); // 旋轉中心固定在原點
 
             document.getElementById("userinput").addEventListener("keypress", function (e) {
                 if (e.key === "Enter") sendMessage();
